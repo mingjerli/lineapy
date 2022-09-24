@@ -158,6 +158,13 @@ def get_context() -> ExecutionContext:
     return _current_context
 
 
+def safe_get_context() -> Optional[ExecutionContext]:
+    try:
+        return get_context()
+    except:
+        return None
+
+
 def teardown_context() -> ContextResult:
     """
     Tearsdown the context, returning the nodes that were accessed

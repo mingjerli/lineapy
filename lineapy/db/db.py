@@ -57,9 +57,10 @@ from lineapy.db.relational import (
 from lineapy.db.utils import create_lineadb_engine
 from lineapy.exceptions.db_exceptions import ArtifactSaveException
 from lineapy.exceptions.user_exception import UserException
+from lineapy.execution.context import safe_get_context
 from lineapy.utils.analytics.event_schemas import ErrorType, ExceptionEvent
 from lineapy.utils.analytics.usage_tracking import track  # circular dep issues
-from lineapy.utils.config import lineapy_config
+from lineapy.utils.config import lineapy_config, options
 from lineapy.utils.constants import DB_SQLITE_PREFIX
 from lineapy.utils.utils import get_literal_value_from_string
 
@@ -814,3 +815,18 @@ class RelationalLineaDB:
             .all()
         )
         return [(n[0].id, n[1].variable_name) for n in results]
+
+
+def get_lineadb() -> RelationalLineaDB:
+    """
+    Return RelationalLineaDB
+
+    If in read only mode (no context set, i.e., _current_context does not
+    exist), need to initiate a new LineaDB instance. If in regular mode,
+    get the db from context
+    """
+    context = safe_get_context()
+    if context is None:
+        return RelationalLineaDB(options.safe_get("database_url"))
+    else:
+        return context.executor.db

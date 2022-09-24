@@ -16,6 +16,7 @@ from lineapy.api.models.linea_artifact import LineaArtifact
 from lineapy.api.models.linea_artifact_store import LineaArtifactStore
 from lineapy.api.models.pipeline import Pipeline
 from lineapy.data.types import Artifact, LineaID, NodeValue
+from lineapy.db.db import get_lineadb
 from lineapy.db.utils import parse_artifact_version
 from lineapy.exceptions.db_exceptions import ArtifactSaveException
 from lineapy.exceptions.user_exception import UserException
@@ -157,11 +158,7 @@ def delete(artifact_name: str, version: Union[int, str]) -> None:
     :raises ValueError: if arifact not found or version invalid
     """
     version = parse_artifact_version(version)
-
-    # get database instance
-    execution_context = get_context()
-    executor = execution_context.executor
-    db = executor.db
+    db = get_lineadb()
 
     # if version is 'all' or 'latest', get_version is None
     get_version = None if isinstance(version, str) else version
@@ -266,8 +263,7 @@ def get(artifact_name: str, version: Optional[int] = None) -> LineaArtifact:
         validated_version if isinstance(validated_version, int) else None
     )
 
-    execution_context = get_context()
-    db = execution_context.executor.db
+    db = get_lineadb()
     artifact = db.get_artifactorm_by_name(artifact_name, final_version)
     linea_artifact = LineaArtifact(
         db=db,
@@ -295,8 +291,7 @@ def get(artifact_name: str, version: Optional[int] = None) -> LineaArtifact:
 
 def get_pipeline(name: str) -> Pipeline:
 
-    execution_context = get_context()
-    db = execution_context.executor.db
+    db = get_lineadb()
 
     pipeline_orm = db.get_pipeline_by_name(name)
 
@@ -350,8 +345,8 @@ def artifact_store() -> LineaArtifactStore:
     LineaArtifactStore
         An object of the class `LineaArtifactStore` that allows for printing and exporting artifacts metadata.
     """
-    execution_context = get_context()
-    cat = LineaArtifactStore(execution_context.executor.db)
+    db = get_lineadb()
+    cat = LineaArtifactStore(db)
     track(CatalogEvent(catalog_size=cat.len))
     return cat
 
@@ -496,9 +491,9 @@ def get_function(
         name in different notebooks and don't save same artifact multiple times
         within the same session.
     """
-    execution_context = get_context()
+    db = get_lineadb()
     art_collection = ArtifactCollection(
-        execution_context.executor.db,
+        db,
         artifacts,
         input_parameters=input_parameters,
         reuse_pre_computed_artifacts=reuse_pre_computed_artifacts,
@@ -531,9 +526,9 @@ def get_module_definition(
         A python module that includes the definition of :func::`get_function`
         as `run_all_sessions`.
     """
-    execution_context = get_context()
+    db = get_lineadb()
     art_collection = ArtifactCollection(
-        execution_context.executor.db,
+        db,
         artifacts,
         input_parameters=input_parameters,
         reuse_pre_computed_artifacts=reuse_pre_computed_artifacts,
