@@ -53,6 +53,7 @@ class lineapy_config:
     logging_file: Optional[Path]
     storage_options: Optional[Dict[str, Any]]
     is_demo: bool
+    readonly: bool
 
     def __init__(
         self,
@@ -78,6 +79,7 @@ class lineapy_config:
         self.logging_level = logging_level
         self.logging_file = logging_file
         self.is_demo = is_demo
+        self.readonly = True
 
         # config file
         config_file_path = Path(
@@ -248,3 +250,7 @@ class lineapy_config:
 
 
 options = lineapy_config()
+if str(options.get("readonly")).lower() == "true":
+    print("LineaPy is running in readonly mode.", end="\r")
+else:
+    print("LineaPy is running in normal mode.", end="\r")

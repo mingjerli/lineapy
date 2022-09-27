@@ -77,6 +77,8 @@ def start(
     """
     Initializing the runtime so that the cells are traced with lineapy.
     """
+    options.set("readonly", False)
+    print("LineaPy is running in normal mode.", "\r")
     global STATE
     ipython = ipython or get_ipython()  # type: ignore
     # IPython does not use exceptionhook, so instead we monkeypatch

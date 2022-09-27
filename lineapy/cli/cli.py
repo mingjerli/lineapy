@@ -131,6 +131,8 @@ def linea_cli(
         if arg in options.__dict__.keys() and locals().get(arg) is not None:
             options.set(arg, locals().get(arg))
 
+    options.set("readonly", False)
+
 
 @linea_cli.command()
 @click.option(
